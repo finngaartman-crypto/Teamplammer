@@ -189,34 +189,48 @@
 
 <script>
 /* ------------------------------
-   KALENDER + TAKEN
+   KALENDER + BACKEND TAKEN
 ------------------------------ */
 
-let selectedDay = null;
-let tasks = JSON.parse(localStorage.getItem("tasks")) || {};
+let selectedDate = null;
+let schedules = [];
 
-function generateCalendar() {
+async function loadSchedules() {
+    const res = await fetch("/api/schedules");
+    schedules = await res.json();
+    renderCalendar();
+}
+
+function renderCalendar() {
     const calendar = document.getElementById("calendar");
     calendar.innerHTML = "";
 
-    for (let i = 1; i <= 31; i++) {
-        const day = document.createElement("div");
-        day.className = "day";
-        day.onclick = () => openPopup(i);
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
 
-        day.innerHTML = `
-            <div class="day-number">${i}</div>
-            <div id="tasks-${i}"></div>
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month+1).padStart(2,"0")}-${String(day).padStart(2,"0")}`;
+
+        const div = document.createElement("div");
+        div.className = "day";
+        div.onclick = () => openPopup(dateStr);
+
+        div.innerHTML = `
+            <div class="day-number">${day}</div>
+            <div id="tasks-${dateStr}"></div>
         `;
 
-        calendar.appendChild(day);
+        calendar.appendChild(div);
     }
 
     renderTasks();
 }
 
-function openPopup(day) {
-    selectedDay = day;
+function openPopup(date) {
+    selectedDate = date;
     document.getElementById("popup").style.display = "block";
 }
 
@@ -224,50 +238,41 @@ function closePopup() {
     document.getElementById("popup").style.display = "none";
 }
 
-function saveTask() {
+async function saveTask() {
     const text = document.getElementById("taskInput").value.trim();
     if (!text) return;
 
-    if (!tasks[selectedDay]) tasks[selectedDay] = [];
-    tasks[selectedDay].push(text);
-
-    localStorage.setItem("tasks", JSON.stringify(tasks));
+    await fetch("/api/schedules", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            title: text,
+            date: selectedDate,
+            description: ""
+        })
+    });
 
     document.getElementById("taskInput").value = "";
     closePopup();
-    renderTasks();
+    loadSchedules();
 }
 
 function renderTasks() {
-    for (let i = 1; i <= 31; i++) {
-        const container = document.getElementById(`tasks-${i}`);
-        container.innerHTML = "";
-
-        if (tasks[i]) {
-            tasks[i].forEach((t, index) => {
-                const div = document.createElement("div");
-                div.className = "task";
-                div.innerText = t;
-
-                div.onclick = (event) => {
-                    event.stopPropagation();
-                    if (confirm("Taak verwijderen?")) {
-                        tasks[i].splice(index, 1);
-                        localStorage.setItem("tasks", JSON.stringify(tasks));
-                        renderTasks();
-                    }
-                };
-
-                container.appendChild(div);
-            });
+    schedules.forEach(s => {
+        const container = document.getElementById(`tasks-${s.date}`);
+        if (container) {
+            const div = document.createElement("div");
+            div.className = "task";
+            div.innerText = s.title;
+            container.appendChild(div);
         }
-    }
+    });
 }
 
-generateCalendar();
+loadSchedules();
 
 /* ------------------------------
-   CHAT
+   CHAT (localStorage)
 ------------------------------ */
 
 let messages = JSON.parse(localStorage.getItem("messages")) || [];
