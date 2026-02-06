@@ -5,22 +5,22 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// In-memory "database"
+// In-memory database
 let schedules = [];
 let nextId = 1;
 
 app.use(cors());
 app.use(express.json());
 
-// Static files (frontend)
+// Serve frontend
 app.use(express.static(path.join(__dirname, "public")));
 
-// GET alle schedules
+// GET all schedules
 app.get("/api/schedules", (req, res) => {
   res.json(schedules);
 });
 
-// POST nieuw schedule
+// POST new schedule
 app.post("/api/schedules", (req, res) => {
   const { title, date, description } = req.body;
 
@@ -39,7 +39,6 @@ app.post("/api/schedules", (req, res) => {
   res.status(201).json(newSchedule);
 });
 
-// Start server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
