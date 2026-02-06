@@ -14,8 +14,23 @@
     }
 
     h1 {
-        margin: 20px 0;
+        margin: 20px 0 10px;
         color: #00eaff;
+    }
+
+    #top-links {
+        margin-bottom: 10px;
+    }
+
+    #top-links a {
+        color: #00eaff;
+        margin: 0 10px;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+    #top-links a:hover {
+        text-decoration: underline;
     }
 
     #container {
@@ -163,6 +178,10 @@
 
 <h1>📅 Teamplanner + 💬 Teamchat</h1>
 
+<div id="top-links">
+    <a href="/schedule.html">📅 Alleen agenda bekijken</a>
+</div>
+
 <div id="container">
 
     <!-- Kalender -->
@@ -208,7 +227,6 @@ function renderCalendar() {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
-
     const daysInMonth = new Date(year, month + 1, 0).getDate();
 
     for (let day = 1; day <= daysInMonth; day++) {
